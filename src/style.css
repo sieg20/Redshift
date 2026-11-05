@@ -21,12 +21,20 @@ html, body {
   user-select: none;
 }
 
-#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+#game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
 
 .hidden { display: none !important; }
 
 /* ---------- HUD ---------- */
 #hud { position: fixed; inset: 0; pointer-events: none; }
+/* pause button: the only way to pause on a touch screen (keyboards also have Esc / P) */
+#btn-hud-pause {
+  position: absolute; top: 16px; left: 50%; transform: translateX(-50%); width: 46px; height: 46px;
+  display: flex; align-items: center; justify-content: center; gap: 6px; pointer-events: auto; cursor: pointer;
+  background: var(--panel); border: 1px solid rgba(62, 242, 255, .35); border-radius: 50%; touch-action: manipulation;
+}
+#btn-hud-pause i { width: 5px; height: 16px; background: var(--ink); border-radius: 1px; }
+#btn-hud-pause:hover, #btn-hud-pause:focus-visible { border-color: var(--cyan); box-shadow: 0 0 14px rgba(62, 242, 255, .4); }
 #letterbox { position: fixed; inset: 0; pointer-events: none; --lb: 0; }
 #letterbox i { position: absolute; left: 0; right: 0; height: 12vh; background: #000; }
 #letterbox .top { top: 0; transform: translateY(calc((var(--lb) - 1) * 100%)); }

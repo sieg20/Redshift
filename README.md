@@ -73,7 +73,9 @@ Paths in the build are relative, so it runs from any folder or sub-path.
 
 Volume, music and effects sliders sit on the title screen and the pause menu, along with **FLASHES**, which sets how much the screen brightens on beats and tier breaks (0 turns flashing off; motion effects stay). Your settings are remembered.
 
-On touch screens, tap the left or right third of the screen to steer and the middle to boost.
+On touch screens, hold the left or right half of the screen to steer and tap both sides at once to boost, so both thumbs stay where they are. While steering with one thumb, tapping the other side boosts; if you lift the first thumb straight away instead, it counts as switching direction (the boost waits 70 ms to tell which, and is timed from when you pressed). The round **pause button** at the top centre of the screen pauses on any device.
+
+**Performance:** phones start at a lower resolution, and on any device the game watches its frame rate. If frames run slow for a couple of seconds it drops the resolution (down to half) and uses fewer blur samples. When there's headroom again it steps back up, one step every 10 seconds or so. The levels and thresholds are in the adaptive quality block near the top of `src/main.js`; `quality` in the dev console shows the current level.
 
 **How speed works:** every ring you fly through adds to your combo, and the combo sets the speed you can *sustain*, up to SONIC (combo 14). Past that, only **overdrive** pushes you further. It charges slowly (one point per ring, half a point per perfect boost) and only while your combo is maxed, so WARP and SINGULARITY take a long, clean stretch and the world bends gradually. Boosts are short bursts (at most +60 over sustained speed) paid for with FLUX, which you refill by collecting rings. They give you a glimpse of the next tier but don't hold it. A missed ring costs 2 combo and 4 overdrive. Hitting a wall halves your combo, your overdrive and your speed.
 

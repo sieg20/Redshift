@@ -21,7 +21,10 @@ const DEV = params.has('dev');
 // ------------------------------------------------------------------ setup
 const canvas = document.getElementById('game');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+// Phones get a lower resolution from the start; see the adaptive quality below.
+const MOBILE = matchMedia('(pointer: coarse)').matches;
+const BASE_DPR = Math.min(devicePixelRatio, MOBILE ? 1.25 : 1.5);
+renderer.setPixelRatio(BASE_DPR);
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
@@ -53,6 +56,42 @@ addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   fx.setSize(innerWidth, innerHeight);
 });
+
+// Adaptive quality: if frames run slow for a couple of seconds the game renders at a lower
+// resolution (and with fewer blur samples), and steps back up when there's headroom again.
+// The post effects are per-pixel, so resolution is by far the biggest cost on phones.
+const QUALITY = [1, 0.8, 0.65, 0.5]; // fraction of BASE_DPR
+const quality = { level: MOBILE ? 1 : 0, ema: 1 / 60, cool: 0, good: 0 };
+function applyQuality() {
+  const pr = BASE_DPR * QUALITY[quality.level];
+  renderer.setPixelRatio(pr);
+  fx.composer.setPixelRatio(pr);
+  renderer.setSize(innerWidth, innerHeight);
+  fx.setSize(innerWidth, innerHeight);
+  fx.u.uTaps.value = quality.level >= 2 ? 8 : 16;
+}
+function trackQuality(rawDt) {
+  if (G.state !== 'playing' && G.state !== 'intro') return;
+  if (rawDt > 0.25) return; // a stall (tab switch, GC), not the steady frame rate
+  quality.ema += (rawDt - quality.ema) * 0.04;
+  quality.cool -= rawDt;
+  if (quality.cool > 0) return;
+  if (quality.ema > 1 / 45 && quality.level < QUALITY.length - 1) {
+    quality.level++;
+  } else if (quality.ema < 1 / 57) {
+    quality.good += rawDt;
+    if (quality.good < 10 || quality.level === 0) return;
+    quality.level--;
+  } else {
+    quality.good = 0;
+    return;
+  }
+  quality.good = 0;
+  quality.cool = 3; // let the new setting settle before judging it
+  quality.ema = 1 / 55;
+  applyQuality();
+}
+if (quality.level) applyQuality();
 
 // ------------------------------------------------------------------ audio
 let audio = null;
@@ -196,15 +235,41 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => keys.delete(e.code));
 
+// Touch: hold the left or right half of the screen to steer; tap both sides at once to boost.
+// Each finger is tracked on its own, so lifting one thumb keeps the other one steering.
+// Pressing the other side while already steering is ambiguous: it's either a boost (the first
+// thumb stays down) or a switch of direction (the first thumb lifts straight after). So that
+// press waits SWITCH_MS to see which, and a boost is then judged as of the moment it was pressed.
+const fingers = new Map(); // pointerId -> { side: -1 | 1, t: press time (ms) }
+const TAP_BOTH_MS = 150; // both sides pressed within this long of each other: a two-thumb tap
+const SWITCH_MS = 70;
+function syncTouch() {
+  touch.left = touch.right = false;
+  for (const f of fingers.values()) f.side < 0 ? (touch.left = true) : (touch.right = true);
+}
 canvas.addEventListener('pointerdown', (e) => {
   if (G.state === 'intro') intro.skip();
   if (G.state !== 'playing') return;
-  const x = e.clientX / innerWidth;
-  if (x < 0.33) touch.left = true;
-  else if (x > 0.67) touch.right = true;
-  else boost();
+  const side = e.clientX < innerWidth / 2 ? -1 : 1;
+  const now = performance.now();
+  const other = [...fingers.values()].find((f) => f.side !== side);
+  fingers.set(e.pointerId, { side, t: now });
+  syncTouch();
+  if (!other) return;
+  if (now - other.t < TAP_BOTH_MS) boost();
+  else {
+    setTimeout(() => {
+      // the first thumb is still down: both sides are held, so it's a boost
+      if ([...fingers.values()].includes(other)) boost((performance.now() - now) / 1000);
+    }, SWITCH_MS);
+  }
 });
-addEventListener('pointerup', () => (touch.left = touch.right = false));
+const liftFinger = (e) => {
+  fingers.delete(e.pointerId);
+  syncTouch();
+};
+addEventListener('pointerup', liftFinger);
+addEventListener('pointercancel', liftFinger);
 
 function steerInput() {
   let s = 0;
@@ -237,12 +302,15 @@ function chargeOverdrive(n) {
   G.overdrive = Math.min(OD_MAX, G.overdrive + n);
 }
 
-function boost() {
+// `ago`: seconds since the player actually pressed (a touch boost can be confirmed a moment
+// later), so the timing is judged against when they pressed, not when it was confirmed.
+function boost(ago = 0) {
+  if (G.state !== 'playing') return;
   if (G.flux < 0.18) {
     hud.toast('FLUX EMPTY — fly through rings');
     return;
   }
-  const beat = track.beatAt(audio.heardTime);
+  const beat = track.beatAt(audio.heardTime - ago);
   const err = Math.abs(beat - Math.round(beat)) * track.spb;
   let label, color, dv, cost;
   if (err < 0.06) {
@@ -926,6 +994,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) pause(true);
 });
 $('btn-resume').addEventListener('click', () => pause(false));
+$('btn-hud-pause').addEventListener('click', () => pause(true));
 $('btn-quit').addEventListener('click', toMenu);
 $('btn-again').addEventListener('click', startRun);
 $('btn-menu').addEventListener('click', toMenu);
@@ -951,8 +1020,10 @@ applyPrefs();
 let last = performance.now();
 function frame(now) {
   requestAnimationFrame(frame);
-  const dt = Math.min(0.05, (now - last) / 1000);
+  const raw = (now - last) / 1000;
+  const dt = Math.min(0.05, raw);
   last = now;
+  trackQuality(raw);
   step(dt);
 }
 
@@ -998,4 +1069,4 @@ async function captureShot(name, width = 960) {
 
 // devStep(seconds) runs the game forward in 1/60 s steps without waiting for frames, for
 // testing when the page isn't being drawn
-if (DEV) Object.assign(window, { G, U, captureShot, world, player, spawner, fx, camera, drop, shards, getAudio: () => audio, prefs, intro, devStep: (sec) => { for (let i = 0; i < sec * 60; i++) step(1 / 60); } });
+if (DEV) Object.assign(window, { G, U, captureShot, world, player, spawner, fx, camera, drop, shards, quality, fingers, getAudio: () => audio, prefs, intro, devStep: (sec) => { for (let i = 0; i < sec * 60; i++) step(1 / 60); } });

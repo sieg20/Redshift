@@ -14,7 +14,7 @@ import { CopyShader } from 'three/addons/shaders/CopyShader.js';
 const SPEED_FRAG = /* glsl */ `
 uniform sampler2D tDiffuse, tPrev;
 uniform vec2 uRes, uFocus, uShockC;
-uniform float uTime, uBlur, uMirage, uChroma, uWarp, uLens, uEcho, uPulse, uGlitch, uFlash, uShockR, uShockAmp, uVig, uSing, uWaveR, uWaveAmp, uWaveGlow, uSat, uPinch;
+uniform float uTime, uBlur, uMirage, uChroma, uWarp, uLens, uEcho, uPulse, uGlitch, uFlash, uShockR, uShockAmp, uVig, uSing, uWaveR, uWaveAmp, uWaveGlow, uSat, uPinch, uTaps;
 varying vec2 vUv;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -88,7 +88,8 @@ void main() {
   vec3 col = vec3(0.0);
   float wsum = 0.0;
   for (int i = 0; i < 16; i++) {
-    float t = float(i) / 15.0;
+    if (float(i) >= uTaps) break; // fewer samples at low quality
+    float t = float(i) / (uTaps - 1.0);
     vec2 p = uFocus + rel * (1.0 - amt * t);
     float w = 1.0 - t * 0.55;
     col.r += texture2D(tDiffuse, p + ca * (1.0 + t)).r * w;
@@ -163,6 +164,7 @@ class SpeedPass extends Pass {
       uVig: { value: 0.3 },
       uSat: { value: 1 },
       uPinch: { value: 0 },
+      uTaps: { value: 16 },
       uSing: { value: 0 },
       uWaveR: { value: 2 },
       uWaveAmp: { value: 0 },

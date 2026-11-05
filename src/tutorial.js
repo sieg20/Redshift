@@ -15,7 +15,7 @@ const PAGES = [
     media: `<figure class="tut-shot">${shot('rings', 'The craft on the road with a line of rings ahead and red walls beside it')}
       ${tag('RING', 50, 42, 'c')}${tag('WALL', 35, 47, 'r')}</figure>`,
     body: `<ul>
-      <li>Steer with ${k('A')}${k('D')} or ${k('&larr;')}${k('&rarr;')}. On a touch screen, hold the left or right third of the screen.</li>
+      <li>Steer with ${k('A')}${k('D')} or ${k('&larr;')}${k('&rarr;')}. On a touch screen, hold the left or right half of the screen.</li>
       <li><b class="c">Rings</b> arrive on the beat of the music. Fly through them to build your <b class="g">combo</b>. Get roughly lined up and the craft eases you in.</li>
       <li>Miss a ring and your combo drops. Hit a <b class="r">wall</b> and you lose speed and half your combo. Skim past one for a <b>CLOSE CALL</b> bonus.</li>
     </ul>`,
@@ -28,7 +28,7 @@ const PAGES = [
         <i class="beat"></i><em>the beat</em>
       </div>
       <ul>
-      <li>Press ${k('SPACE')} to boost (or tap the middle of the screen). Time it <b>on the beat</b>: within 60 ms is <b class="g">PERFECT</b>, within 120 ms is <b class="c">GOOD</b>. The circle next to your speed closes in on every beat.</li>
+      <li>Press ${k('SPACE')} to boost. On a touch screen, tap both sides at once. Time it <b>on the beat</b>: within 60 ms is <b class="g">PERFECT</b>, within 120 ms is <b class="c">GOOD</b>. The circle next to your speed closes in on every beat.</li>
       <li>Perfect boosts push you furthest and score the most.</li>
       <li>Each boost uses <b class="c">FLUX</b>, the bar under your combo. It refills slowly on its own and a bit with every ring.</li>
     </ul>`,
