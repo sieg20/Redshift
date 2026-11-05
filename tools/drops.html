@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Drop Labeller</title>
+  <style>
+    :root { --bg: #0b0816; --panel: #151025; --ink: #e9e6ff; --dim: #8a84aa; --cyan: #3ef2ff; --gold: #ffd166; --green: #5dff9b; --red: #ff4f6b; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 system-ui, sans-serif; padding: 16px; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    p { margin: 0 0 12px; color: var(--dim); max-width: 900px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+    button, label.btn { background: var(--panel); color: var(--ink); border: 1px solid #3a3260; padding: 6px 12px; border-radius: 4px; cursor: pointer; font: inherit; }
+    button:hover, label.btn:hover { border-color: var(--cyan); }
+    button.primary { border-color: var(--gold); }
+    #info { color: var(--dim); }
+    #status { color: var(--cyan); }
+    canvas { width: 100%; height: 260px; display: block; background: var(--panel); border-radius: 4px; cursor: crosshair; }
+    .lists { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 12px; }
+    .lists h2 { font-size: 13px; letter-spacing: 1px; color: var(--dim); margin: 0 0 6px; font-weight: 600; }
+    .item { display: flex; gap: 8px; align-items: center; padding: 3px 0; }
+    .item b { min-width: 110px; font-weight: 500; }
+    .item.label b { color: var(--green); }
+    .item.det b { color: var(--gold); }
+    .item .miss { color: var(--red); }
+    .item button { padding: 2px 8px; }
+    kbd { border: 1px solid #554c80; border-bottom-width: 2px; border-radius: 3px; padding: 0 5px; font-size: 12px; }
+    .legend span { margin-right: 14px; }
+    .sw { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; }
+  </style>
+</head>
+<body>
+  <h1>Drop Labeller</h1>
+  <p>
+    Load a song, listen, and mark where its drops really are. Saving stores the song's beat levels and your drop beats
+    (no audio) in <code>scripts/drop-corpus/</code>, and <code>npm run test:drops</code> checks the detector against them.
+  </p>
+  <div class="row">
+    <label class="btn">Load song<input type="file" id="file" accept="audio/*" hidden /></label>
+    <button id="play">Play</button>
+    <button id="use">Use detected as labels</button>
+    <button id="clear">Clear labels</button>
+    <button id="save" class="primary">Save to corpus</button>
+    <span id="status"></span>
+  </div>
+  <div class="row" id="info">No song loaded.</div>
+  <canvas id="plot"></canvas>
+  <div class="row legend" style="margin-top:8px">
+    <span><i class="sw" style="background:#5a527f"></i>whole mix</span>
+    <span><i class="sw" style="background:var(--cyan)"></i>detector level (bass-weighted)</span>
+    <span><i class="sw" style="background:var(--gold)"></i>detected drop</span>
+    <span><i class="sw" style="background:var(--green)"></i>your label</span>
+  </div>
+  <div class="row" style="color:var(--dim)">
+    Click to seek. <kbd>Shift</kbd>+click to add or remove a label. <kbd>Space</kbd> play/pause,
+    <kbd>M</kbd> mark/unmark the beat under the playhead, <kbd>&larr;</kbd><kbd>&rarr;</kbd> skip 2 s,
+    <kbd>,</kbd><kbd>.</kbd> move the nearest label a beat.
+  </div>
+  <div class="lists">
+    <div><h2>YOUR LABELS</h2><div id="labels"></div></div>
+    <div><h2>DETECTED</h2><div id="detected"></div></div>
+  </div>
+  <script type="module" src="./drops.js"></script>
+</body>
+</html>

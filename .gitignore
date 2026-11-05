@@ -1,0 +1,4 @@
+node_modules/
+dist/
+.songcheck/
+redshift-web.zip

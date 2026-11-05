@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>REDSHIFT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- In-run HUD -->
+  <!-- Drop letterbox (under the HUD so the numbers stay readable) -->
+  <div id="letterbox"><i class="top"></i><i class="bot"></i></div>
+
+  <div id="hud" class="hidden">
+    <div id="hud-tl">
+      <div id="tier-name">CRUISE</div>
+      <div id="tier-bar"><div id="tier-fill"></div></div>
+      <div id="tier-next">next: BLUR</div>
+    </div>
+    <div id="hud-tr">
+      <div class="stat"><span class="lbl">TIME</span><span id="time">3:00</span></div>
+      <div class="stat"><span class="lbl">DIST</span><span id="dist">0 km</span></div>
+      <div class="stat"><span class="lbl">SCORE</span><span id="score">0</span></div>
+    </div>
+    <div id="hud-bottom">
+      <div id="beat-ring"><div id="beat-core"></div><div id="beat-shrink"></div></div>
+      <div id="speedo">
+        <div id="speed-val">0</div>
+        <div id="speed-unit">KM/H</div>
+        <div id="speed-sub"></div>
+      </div>
+      <div id="meters">
+        <div id="combo">x0</div>
+        <div id="flux"><div id="flux-fill"></div></div>
+        <div id="flux-lbl">FLUX</div>
+      </div>
+    </div>
+    <div id="markers"></div>
+    <div id="popups"></div>
+    <div id="banner"></div>
+    <div id="toast"></div>
+    <div id="countdown"></div>
+  </div>
+
+  <!-- Title / menu -->
+  <div id="menu" class="overlay">
+    <div class="title-wrap">
+      <h1 id="logo">RED<span>SHIFT</span></h1>
+      <p class="tag">go fast enough and the universe starts to bend</p>
+    </div>
+    <div class="menu-buttons">
+      <button id="btn-play" class="btn primary">PLAY &mdash; built-in soundtrack <small>174 BPM</small></button>
+      <div id="song-row" class="song-row"></div>
+      <label class="btn" id="btn-file-label">USE YOUR OWN MUSIC <small>mp3 / ogg / wav</small>
+        <input type="file" id="file-input" accept="audio/*" hidden />
+      </label>
+      <button id="btn-howto" class="btn small" type="button">HOW TO PLAY</button>
+      <div id="analysis-status"></div>
+    </div>
+    <div class="controls">
+      <div><kbd>A</kbd><kbd>D</kbd> / <kbd>&larr;</kbd><kbd>&rarr;</kbd> steer</div>
+      <div><kbd>SPACE</kbd> boost &mdash; hit it <b>on the beat</b></div>
+      <div>fly through <b class="c">rings</b>, dodge <b class="r">walls</b>, keep the combo alive</div>
+      <div class="dim"><kbd>ESC</kbd> pause &nbsp; <kbd>M</kbd> mute &nbsp; <kbd>-</kbd><kbd>=</kbd> volume &nbsp; <kbd>[</kbd><kbd>]</kbd> audio sync offset</div>
+    </div>
+    <div class="settings-panel"></div>
+    <div class="tiers">
+      <span>CRUISE</span><i></i><span>BLUR</span><i></i><span>MIRAGE</span><i></i><span>SONIC</span><i></i><span>WARP</span><i></i><span class="sing">SINGULARITY</span>
+    </div>
+    <div id="best"></div>
+    <div id="song-credit"></div>
+  </div>
+
+  <!-- Level intro (cinematic) -->
+  <div id="intro" class="hidden">
+    <div class="bar top"></div>
+    <div class="bar bot"></div>
+    <div id="intro-title"><small>NOW ENTERING</small><b></b><span></span></div>
+    <div id="intro-skip">SPACE / CLICK TO SKIP</div>
+  </div>
+  <div id="intro-fade"></div>
+
+  <div id="pause" class="overlay hidden">
+    <h2>PAUSED</h2>
+    <button id="btn-resume" class="btn primary">RESUME</button>
+    <button id="btn-pause-howto" class="btn">HOW TO PLAY</button>
+    <button id="btn-quit" class="btn">QUIT TO MENU</button>
+    <div class="settings-panel"></div>
+  </div>
+
+  <div id="results" class="overlay hidden">
+    <h2>RUN COMPLETE</h2>
+    <div id="results-body"></div>
+    <button id="btn-again" class="btn primary">RUN IT BACK</button>
+    <button id="btn-menu" class="btn">MENU</button>
+  </div>
+
+  <!-- How to Play (filled in by src/tutorial.js) -->
+  <div id="tutorial" class="overlay hidden"></div>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
