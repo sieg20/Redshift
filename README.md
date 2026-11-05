@@ -54,7 +54,8 @@ Then open the URL Vite prints (usually http://localhost:5173).
 
 - **itch.io** (made for browser games): create a project, set *Kind of project* to **HTML**, upload the zip and tick *This file will be played in the browser*. Set the viewport to 1280 × 720 and turn on *Fullscreen button*. Under *Visibility & access*, **Restricted** with a password (or a secret URL from *Draft*) keeps it to the people you give the link to.
 - **Netlify Drop** (app.netlify.com/drop): drag the `dist` folder onto the page and you get a link straight away.
-- **GitHub Pages, Cloudflare Pages, Vercel:** publish the `dist` folder.
+- **GitHub Pages:** the repository has a workflow (`.github/workflows/deploy.yml`) that builds and publishes the game on every push to `main`. Turn it on once under *Settings → Pages → Source: GitHub Actions*. The game is then at `https://<user>.github.io/<repo>/`. On a free account the repository has to be public, and so is the site.
+- **Cloudflare Pages, Vercel:** publish the `dist` folder.
 
 Paths in the build are relative, so it runs from any folder or sub-path.
 
