@@ -16,6 +16,11 @@ const HIT_WINDOW = 0.07;
 // ending in a big drop ring on the drop beat. The course stays denser for a while after.
 export const BUILD_BEATS = 16;
 
+// Landing zone: for this long after flying through the drop portal and the exit portal, while
+// the screen is busy with the impact (freeze, camera slam, shards, sky burst), the course is
+// just a straight line of rings with no walls.
+const LANDING_S = 2;
+
 // accent: 0 ring, 1 accent ring, 2 drop ring (a portal into the wormhole), 3 exit portal
 const GATE_SCALE = [1, 1.25, 1.7, 3.6];
 const GATE_POINTS = [100, 250, 500, 300];
@@ -122,8 +127,14 @@ export class Spawner {
     this.drops = [];
   }
 
-  setDrops(drops) {
+  setDrops(drops, spb = 0.5) {
     this.drops = drops || [];
+    this.landB = Math.ceil(LANDING_S / spb); // 6 beats at 174 BPM, 5 at 128
+  }
+
+  // Is beat b inside the landing zone after a drop portal or an exit portal?
+  _landing(b) {
+    return this.drops.some((x) => (b > x && b <= x + this.landB) || (b > x + SURGE_BEATS && b <= x + SURGE_BEATS + this.landB));
   }
 
   _make(type) {
@@ -210,6 +221,12 @@ export class Spawner {
     }
     if (this.drops.includes(b)) {
       this._spawn('gate', b, LANES[this.gateLane], 2);
+      this.lastGate = b;
+      return;
+    }
+    if (this._landing(b)) {
+      // a ring on every beat, straight on in the lane you came through
+      this._spawn('gate', b, LANES[this.gateLane]);
       this.lastGate = b;
       return;
     }

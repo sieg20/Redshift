@@ -842,7 +842,7 @@ async function startRun() {
     track = soundtrack;
   }
   resetRun();
-  spawner.setDrops(track.drops);
+  spawner.setDrops(track.drops, track.spb);
   track.setLayer(0);
   // the intro plays first; beginPlay() starts the music when the craft enters the portal
   G.state = 'intro';
